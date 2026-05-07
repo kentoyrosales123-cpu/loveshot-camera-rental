@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CamRent | Camera Rental</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <img src="image/logo.png" alt="Love LS Shot Imagery" />
+      </div>
+
+      <nav>
+        <a href="#home" class="active" data-page="home">Home</a>
+        <a href="#cameras" data-page="cameras">Cameras</a>
+        <a href="#gallery" data-page="gallery">Gallery</a>
+        <a href="#contact" data-page="contact">Contact</a>
+      </nav>
+    </header>
+
+    <section class="hero page active-page" id="home">
+      <div class="hero-slideshow">
+        <div
+          class="slide active"
+          style="background-image: url(&quot;image/slide1.jpg&quot;)"
+        ></div>
+        <div
+          class="slide"
+          style="background-image: url(&quot;image/slide2.jpg&quot;)"
+        ></div>
+        <div
+          class="slide"
+          style="background-image: url(&quot;image/slide3.jpg&quot;)"
+        ></div>
+      </div>
+      <div class="hero-content">
+        <h1>Rent Professional Cameras <span>Anytime</span></h1>
+
+        <p>
+          Affordable, reliable, and premium camera rentals for creators,
+          photographers, vloggers, and events.
+        </p>
+
+        <a href="#cameras" class="hero-btn">View Cameras</a>
+      </div>
+
+      <div class="hero-card floating-camera-card">
+        <img src="image/camera-photo.png" alt="Sony a6400 Camera" />
+      </div>
+    </section>
+
+    <section class="page" id="cameras">
+      <div class="section-title">
+        <h2>Available Camera</h2>
+        <p>Choose the perfect camera for your next shoot.</p>
+      </div>
+
+      <div class="products">
+        <div class="product-card">
+          <div class="product-image">
+            <div class="mini-camera"></div>
+          </div>
+
+          <h3>Sony a6400</h3>
+
+          <p>
+            Compact mirrorless camera perfect for photography, content creation,
+            and cinematic video shoots.
+          </p>
+
+          <div class="camera-specs">
+            <div class="spec-box">
+              <span>Sensor</span>
+              <strong>24.2MP APS-C CMOS</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Video</span>
+              <strong>4K UHD 30FPS</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Autofocus</span>
+              <strong>425-Point Fast AF</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Screen</span>
+              <strong>180° Flip Screen</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Connectivity</span>
+              <strong>Wi-Fi + Bluetooth</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Battery</span>
+              <strong>Approx. 410 Shots</strong>
+            </div>
+          </div>
+
+          <div class="pricing">
+            <div class="price-box">
+              <small>Daily Rental</small>
+              <strong>₱550</strong>
+            </div>
+
+            <div class="price-box">
+              <small>Weekly Rental</small>
+              <strong>₱3,500</strong>
+            </div>
+          </div>
+
+          <button class="rent-btn" data-type="camera">Rent Now</button>
+        </div>
+
+        <div class="product-card">
+          <div class="product-image">
+            <div class="mini-camera"></div>
+          </div>
+
+          <h3>Sony E 55-210mm Telephoto Lens</h3>
+
+          <p>
+            Lightweight zoom telephoto lens ideal for portraits, sports
+            photography, wildlife, and cinematic long shots.
+          </p>
+
+          <div class="camera-specs">
+            <div class="spec-box">
+              <span>Mount</span>
+              <strong>Sony E-Mount</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Focal Length</span>
+              <strong>55-210mm</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Aperture</span>
+              <strong>f/4.5 - f/6.3</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Stabilization</span>
+              <strong>Optical SteadyShot</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Best For</span>
+              <strong>Portrait & Wildlife</strong>
+            </div>
+
+            <div class="spec-box">
+              <span>Weight</span>
+              <strong>345g</strong>
+            </div>
+          </div>
+
+          <div class="pricing">
+            <div class="price-box">
+              <small>Daily Rental</small>
+              <strong>₱550</strong>
+            </div>
+
+            <div class="price-box">
+              <small>Weekly Rental</small>
+              <strong>₱3,500</strong>
+            </div>
+          </div>
+
+          <button class="rent-btn" data-type="lens">Rent Now</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="page gallery" id="gallery">
+      <div class="section-title">
+        <h2>Sample Gallery</h2>
+        <p>Choose an album to view sample outputs.</p>
+      </div>
+
+      <div class="album-grid">
+        <div class="album-card" onclick="openAlbum('kitlens')">
+          <div class="album-cover">
+            <img
+              src="image/a6400-shots/kit1.jpg"
+              alt="Sony a6400 Kit Lens Output"
+            />
+          </div>
+
+          <h3>Sony a6400 Kit Lens Output</h3>
+          <p>6 Items</p>
+        </div>
+
+        <div class="album-card" onclick="openAlbum('telephoto')">
+          <div class="album-cover">
+            <img
+              src="image/telephoto-shots/slide1.jpg"
+              alt="Sony a6400 Telephoto Lens Output"
+            />
+          </div>
+
+          <h3>Sony a6400 Telephoto Lens Output</h3>
+          <p>8 Items</p>
+        </div>
+      </div>
+
+      <div class="album-view" id="kitlensAlbum">
+        <button class="back-btn" onclick="closeAlbum()">
+          ← Back to Albums
+        </button>
+        <h3>Sony a6400 Kit Lens Output</h3>
+
+        <div class="gallery-grid">
+          <div class="gallery-item">
+            <img src="image/a6400-shots/kit1.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/a6400-shots/kit2.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/a6400-shots/kit3.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/a6400-shots/kit4.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/a6400-shots/kit5.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/a6400-shots/kit6.jpg" alt="" />
+          </div>
+        </div>
+      </div>
+
+      <div class="album-view" id="telephotoAlbum">
+        <button class="back-btn" onclick="closeAlbum()">
+          ← Back to Albums
+        </button>
+        <h3>Sony a6400 Telephoto Lens Output</h3>
+
+        <div class="gallery-grid">
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide1.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide2.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide3.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide4.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide5.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide6.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide7.jpg" alt="" />
+          </div>
+          <div class="gallery-item">
+            <img src="image/telephoto-shots/slide8.jpg" alt="" />
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="contact page" id="contact">
+      <div class="section-title">
+        <h2>Book Your Rental</h2>
+        <p>Send your rental request and we will contact you shortly.</p>
+      </div>
+
+      <form class="contact-form" id="rentalForm">
+        <div class="form-group">
+          <input type="text" placeholder="Your Name" required />
+        </div>
+
+        <div class="form-group">
+          <input type="email" placeholder="Your Email" required />
+        </div>
+
+        <div class="form-group">
+          <input type="date" required />
+        </div>
+
+        <div class="form-group">
+          <select id="cameraSelect" required>
+            <option value="">Select Camera</option>
+
+            <option value="550">Sony a6400 - ₱550/day</option>
+
+            <option value="550">
+              Sony E 55-210mm Telephoto Lens - ₱550/day
+            </option>
+
+            <option value="1000">
+              Sony a6400 + Telephoto Lens Bundle - ₱1000/day
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <input
+            type="number"
+            id="rentalDays"
+            min="1"
+            placeholder="Number of rental days"
+            required
+          />
+        </div>
+
+        <div class="rental-total-box">
+          <span>Total Rental Price</span>
+          <strong id="totalPrice">₱0</strong>
+          <small id="discountNote"></small>
+        </div>
+
+        <button type="submit" class="submit-btn">Submit Rental Request</button>
+      </form>
+      <footer>
+        <p>© 2026 Love LS Shot Imagery</p>
+      </footer>
+    </section>
+
+    <!-- IMAGE MODAL -->
+    <div class="image-modal" id="imageModal">
+      <span class="close-image-modal" id="closeImageModal">✕</span>
+      <img class="modal-image" id="modalImage" src="" alt="Preview image" />
+    </div>
+
+    <!-- TERMS MODAL -->
+
+    <div class="terms-modal" id="termsModal">
+      <div class="terms-box">
+        <button class="close-modal" id="closeModal">✕</button>
+
+        <h2>Camera & Lens Rental Terms & Conditions</h2>
+
+        <div class="terms-content" id="termsContent"></div>
+
+        <button class="agree-btn">I Agree & Continue</button>
+      </div>
+    </div>
+
+    <!-- GCASH PAYMENT MODAL -->
+
+    <div class="payment-modal" id="paymentModal">
+      <div class="payment-box">
+        <button class="close-payment-modal" id="closePaymentModal">✕</button>
+
+        <h2>Manual GCash Payment</h2>
+        <p class="payment-subtitle">
+          Please send your reservation payment through GCash.
+        </p>
+
+        <div class="gcash-card">
+          <h3>GCash Reservation Payment</h3>
+
+          <div class="gcash-qr">
+            <img src="image/gcash-egi.png" alt="GCash QR Code" />
+          </div>
+
+          <div class="payment-row">
+            <span>Account Name</span>
+            <strong>E** J** FR*N M.</strong>
+          </div>
+
+          <div class="payment-row">
+            <span>Mobile Number</span>
+            <strong>0938 553 ****</strong>
+          </div>
+
+          <div class="payment-row">
+            <span>Reservation Fee</span>
+            <strong>₱1,000</strong>
+          </div>
+        </div>
+
+        <p class="payment-note">
+          After payment, please send your GCash receipt/screenshot to our
+          Facebook page or contact number for confirmation.
+        </p>
+
+        <button class="agree-btn" id="donePaymentBtn">Done</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
