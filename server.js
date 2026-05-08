@@ -376,7 +376,18 @@ app.post("/api/ai-chat", async (req, res) => {
       {
         keywords: ["pay", "payment", "gcash"],
         answer:
-          "Payment is done manually through GCash. After paying, please upload or send your proof of payment. Admin confirmation is required.",
+          "Payment is done manually through GCash. After paying, please wait for admin confirmation.",
+      },
+      {
+        keywords: [
+          "approved",
+          "approval",
+          "how will we know",
+          "know if approved",
+          "confirmed",
+        ],
+        answer:
+          "You will know your booking is approved once the admin confirms your payment. LoveShot will send a confirmation message or email after approval.",
       },
       {
         keywords: ["available", "availability", "date", "schedule"],
