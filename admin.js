@@ -74,9 +74,17 @@ function updateStats(reservations) {
 }
 
 async function confirmPayment(id) {
-  await fetch(`/api/reservations/${id}/payment`, {
+  const res = await fetch(`/api/reservations/${id}/payment`, {
     method: "PATCH",
   });
+
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Payment confirmed and booking email sent to client.");
+  } else {
+    alert(data.message || "Failed to send confirmation email.");
+  }
 
   loadReservations();
 }

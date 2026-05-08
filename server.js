@@ -1,11 +1,23 @@
 require("dotenv").config();
 
+const nodemailer = require("nodemailer");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 const app = express();
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
 
 app.use(cors());
 app.use(express.json());
@@ -82,15 +94,85 @@ app.get("/api/reservations", async (req, res) => {
 
 app.patch("/api/reservations/:id/payment", async (req, res) => {
   try {
-    const reservation = await Reservation.findByIdAndUpdate(
-      req.params.id,
-      { paymentStatus: "confirmed" },
-      { new: true },
-    );
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "Missing RESEND_API_KEY in .env file",
+      });
+    }
 
-    res.json(reservation);
+    const reservation = await Reservation.findById(req.params.id);
+
+    if (!reservation) {
+      return res.status(404).json({
+        success: false,
+        message: "Reservation not found",
+      });
+    }
+
+    if (!reservation.email) {
+      return res.status(400).json({
+        success: false,
+        message: "Reservation has no client email address.",
+      });
+    }
+
+    reservation.paymentStatus = "confirmed";
+    reservation.status = "approved";
+
+    await reservation.save();
+
+    await transporter.sendMail({
+      from: process.env.GMAIL_USER,
+      to: reservation.email,
+      subject: "LoveShot Booking Confirmation",
+      html: `
+    <div style="font-family: Arial; padding: 20px;">
+      <h2 style="color:#2563eb;">
+        Booking Confirmed 📸
+      </h2>
+
+      <p>Hello ${reservation.name},</p>
+
+      <p>
+        Your payment has been confirmed successfully.
+        Your booking with <strong>LoveShot Rental</strong>
+        is now officially reserved.
+      </p>
+
+      <div style="
+        background:#f1f5f9;
+        padding:20px;
+        border-radius:12px;
+        margin-top:20px;
+      ">
+        <h3>Booking Details</h3>
+
+        <p><strong>Camera:</strong> ${reservation.camera}</p>
+        <p><strong>Lens:</strong> ${reservation.lens || "N/A"}</p>
+        <p><strong>Rental Days:</strong> ${reservation.days}</p>
+        <p><strong>Total:</strong> ₱${reservation.total}</p>
+      </div>
+
+      <p style="margin-top:20px;">
+        Thank you for choosing LoveShot Rental.
+      </p>
+    </div>
+  `,
+    });
+
+    res.json({
+      success: true,
+      message: "Payment confirmed and email sent.",
+      reservation,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to confirm payment" });
+    console.error("Payment confirmation error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 });
 
@@ -121,9 +203,31 @@ app.get("/api/messages", async (req, res) => {
 
 app.post("/api/messages", async (req, res) => {
   try {
-    const message = await Message.create(req.body);
-    res.json(message);
+    const { conversationId, name, message, sender } = req.body;
+
+    let finalConversationId = conversationId;
+
+    // If customer sends first message, create conversation automatically
+    if (!finalConversationId) {
+      let conversation = await Conversation.findOne({ name });
+
+      if (!conversation) {
+        conversation = await Conversation.create({ name });
+      }
+
+      finalConversationId = conversation._id.toString();
+    }
+
+    const newMessage = await Message.create({
+      conversationId: finalConversationId,
+      name,
+      message,
+      sender,
+    });
+
+    res.json(newMessage);
   } catch (error) {
+    console.error("Message error:", error);
     res.status(500).json({ message: "Failed to send message" });
   }
 });

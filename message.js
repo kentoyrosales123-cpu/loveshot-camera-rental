@@ -97,7 +97,7 @@ chatForm.addEventListener("submit", async (e) => {
       conversationId,
       name: currentUser,
       message,
-      sender: "user",
+      sender: "customer",
     }),
   });
 
@@ -105,9 +105,15 @@ chatForm.addEventListener("submit", async (e) => {
   loadMessages();
 });
 
-if (currentUser && conversationId) {
-  showChat();
-  loadMessages();
+if (currentUser) {
+  registerName.value = currentUser;
+
+  if (!conversationId) {
+    startChat();
+  } else {
+    showChat();
+    loadMessages();
+  }
 }
 
 setInterval(loadMessages, 1000);
