@@ -35,6 +35,7 @@ const reservationSchema = new mongoose.Schema(
     name: String,
     email: String,
     phone: String,
+    rentalDate: String,
     camera: String,
     lens: String,
     days: Number,
@@ -68,6 +69,21 @@ const conversationSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+const availabilitySchema = new mongoose.Schema(
+  {
+    fromDate: String,
+    toDate: String,
+    status: {
+      type: String,
+      default: "unavailable",
+    },
+    note: String,
+  },
+  { timestamps: true },
+);
+
+const Availability = mongoose.model("Availability", availabilitySchema);
 
 const Conversation = mongoose.model("Conversation", conversationSchema);
 
@@ -270,6 +286,40 @@ app.get("/api/messages/:conversationId", async (req, res) => {
     res.json(messages);
   } catch (error) {
     res.status(500).json({ message: "Failed to load messages" });
+  }
+});
+
+app.get("/api/availability", async (req, res) => {
+  try {
+    const dates = await Availability.find().sort({ date: 1 });
+    res.json(dates);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to load availability" });
+  }
+});
+
+app.post("/api/availability", async (req, res) => {
+  try {
+    const { fromDate, toDate, note } = req.body;
+
+    const unavailableDate = await Availability.create({
+      fromDate,
+      toDate,
+      status: "unavailable",
+      note,
+    });
+
+    res.json({
+      success: true,
+      message: "Unavailable dates saved.",
+      unavailableDate,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: "Failed to save availability",
+    });
   }
 });
 

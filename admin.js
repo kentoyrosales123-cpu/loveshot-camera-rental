@@ -211,8 +211,79 @@ async function sendAdminReply() {
 loadReservations();
 loadConversations();
 loadAdminMessages();
+loadAvailability();
 
 setInterval(() => {
   loadConversations();
   loadAdminMessages();
 }, 1000);
+
+function showAdminSection(sectionId) {
+  document.querySelectorAll(".admin-section").forEach((section) => {
+    section.classList.remove("active-section");
+  });
+
+  document.getElementById(sectionId).classList.add("active-section");
+}
+
+async function loadAvailability() {
+  const res = await fetch("/api/availability");
+  const dates = await res.json();
+
+  const list = document.getElementById("availabilityList");
+  if (!list) return;
+
+  if (dates.length === 0) {
+    list.innerHTML = `<p class="empty-message">No unavailable dates.</p>`;
+    return;
+  }
+
+  list.innerHTML = dates
+    .map(
+      (item) => `
+        <div class="admin-message-bubble">
+          <strong>${item.fromDate} → ${item.toDate}</strong>
+          <p>${item.note || "Unavailable"}</p>
+          <small>${item.status}</small>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+async function toggleAvailability() {
+  const fromDateInput = document.getElementById("availabilityFromDate");
+
+  const toDateInput = document.getElementById("availabilityToDate");
+
+  const noteInput = document.getElementById("availabilityNote");
+
+  if (!fromDateInput.value || !toDateInput.value) {
+    alert("Please select from and to dates.");
+    return;
+  }
+
+  const res = await fetch("/api/availability", {
+    method: "POST",
+
+    headers: {
+      "Content-Type": "application/json",
+    },
+
+    body: JSON.stringify({
+      fromDate: fromDateInput.value,
+      toDate: toDateInput.value,
+      note: noteInput.value,
+    }),
+  });
+
+  const data = await res.json();
+
+  alert(data.message);
+
+  fromDateInput.value = "";
+  toDateInput.value = "";
+  noteInput.value = "";
+
+  loadAvailability();
+}

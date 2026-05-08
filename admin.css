@@ -445,3 +445,15 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.admin-section {
+  display: none;
+}
+
+.admin-section.active-section {
+  display: block;
+}
+
+#dashboardSection .cards {
+  margin-bottom: 0;
+}

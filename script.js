@@ -1,6 +1,19 @@
 const navLinks = document.querySelectorAll("nav a");
 const pages = document.querySelectorAll(".page");
 
+let unavailableDates = [];
+
+async function loadClientAvailability() {
+  try {
+    const res = await fetch("/api/availability");
+    unavailableDates = await res.json();
+  } catch (error) {
+    console.error("Failed to load availability:", error);
+  }
+}
+
+loadClientAvailability();
+
 /* PAGE TRANSITION */
 
 function showPage(pageId) {
@@ -264,6 +277,22 @@ let pendingReservation = null;
 if (rentalForm && paymentModal) {
   rentalForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    const rentalDate = document.getElementById("rentalDate").value;
+
+    const selectedDate = new Date(rentalDate);
+
+    const isUnavailable = unavailableDates.some((item) => {
+      const from = new Date(item.fromDate);
+      const to = new Date(item.toDate);
+
+      return selectedDate >= from && selectedDate <= to;
+    });
+
+    if (isUnavailable) {
+      alert("Selected date is unavailable. Please choose another date.");
+      return;
+    }
 
     pendingReservation = {
       name: document.getElementById("name").value,
