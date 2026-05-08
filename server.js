@@ -24,7 +24,9 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 30000,
+  })
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.error("MongoDB error:", err));
 
