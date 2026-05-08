@@ -138,7 +138,7 @@ app.patch("/api/reservations/:id/payment", async (req, res) => {
 
     if (reservation.email) {
       transporter
-        .sendMail({
+        .send({
           from: process.env.GMAIL_USER,
           to: reservation.email,
           subject: "LoveShot Booking Confirmation",
@@ -169,8 +169,8 @@ app.patch("/api/reservations/:id/payment", async (req, res) => {
             </div>
           `,
         })
-        .then(() => {
-          console.log("Confirmation email sent to:", reservation.email);
+        .then((data) => {
+          console.log("Confirmation email sent to:", reservation.email, data);
         })
         .catch((error) => {
           console.error("Email failed:", error);
