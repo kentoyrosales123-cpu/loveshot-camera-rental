@@ -432,3 +432,63 @@ if (cameraSelect && rentalDays) {
   cameraSelect.addEventListener("change", calculateRentalTotal);
   rentalDays.addEventListener("input", calculateRentalTotal);
 }
+
+const aiChatToggle = document.getElementById("aiChatToggle");
+const aiChatBox = document.getElementById("aiChatBox");
+const aiChatClose = document.getElementById("aiChatClose");
+const aiChatMessages = document.getElementById("aiChatMessages");
+const aiChatForm = document.getElementById("aiChatForm");
+const aiChatInput = document.getElementById("aiChatInput");
+const quickQuestions = document.querySelectorAll(".ai-quick-questions button");
+
+function addAiMessage(message, sender = "bot") {
+  const div = document.createElement("div");
+  div.className = `ai-message ${sender}`;
+  div.textContent = message;
+  aiChatMessages.appendChild(div);
+  aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+}
+
+aiChatToggle?.addEventListener("click", () => {
+  aiChatBox.classList.toggle("active");
+});
+
+aiChatClose?.addEventListener("click", () => {
+  aiChatBox.classList.remove("active");
+});
+
+quickQuestions.forEach((button) => {
+  button.addEventListener("click", () => {
+    aiChatInput.value = button.textContent;
+    aiChatForm.requestSubmit();
+  });
+});
+
+aiChatForm?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const message = aiChatInput.value.trim();
+  if (!message) return;
+
+  addAiMessage(message, "user");
+  aiChatInput.value = "";
+
+  addAiMessage("Typing...", "bot");
+  const typingMessage = aiChatMessages.lastChild;
+
+  try {
+    const res = await fetch("/api/ai-chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    });
+
+    const data = await res.json();
+    typingMessage.textContent = data.reply;
+  } catch (error) {
+    typingMessage.textContent =
+      "Sorry, I cannot answer right now. Please contact the LoveShot admin for confirmation.";
+  }
+});

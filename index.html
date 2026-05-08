@@ -415,6 +415,48 @@
       </div>
     </div>
 
+    <!-- LoveShot AI FAQ Agent -->
+    <div class="ai-chat-widget">
+      <button id="aiChatToggle" class="ai-chat-toggle">
+        💬 Ask LoveShot AI
+      </button>
+
+      <div id="aiChatBox" class="ai-chat-box">
+        <div class="ai-chat-header">
+          <div>
+            <strong>LoveShot AI Assistant</strong>
+            <small>Camera rental FAQ support</small>
+          </div>
+          <button id="aiChatClose">×</button>
+        </div>
+
+        <div id="aiChatMessages" class="ai-chat-messages">
+          <div class="ai-message bot">
+            Hi! I’m LoveShot AI Assistant. Ask me about rental prices, payment,
+            availability, or booking rules.
+          </div>
+        </div>
+
+        <div class="ai-quick-questions">
+          <button>How much is the reservation fee?</button>
+          <button>How do I pay?</button>
+          <button>Is the camera available?</button>
+          <button>What happens after I submit a booking?</button>
+          <button>What is the late return fee?</button>
+        </div>
+
+        <form id="aiChatForm" class="ai-chat-form">
+          <input
+            id="aiChatInput"
+            type="text"
+            placeholder="Ask about LoveShot rental..."
+            autocomplete="off"
+          />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+
     <script src="script.js"></script>
   </body>
 </html>

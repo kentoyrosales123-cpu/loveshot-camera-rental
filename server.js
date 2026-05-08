@@ -323,6 +323,178 @@ app.post("/api/availability", async (req, res) => {
   }
 });
 
+app.post("/api/ai-chat", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message) {
+      return res.status(400).json({
+        reply: "Please type a question about LoveShot Camera Rental.",
+      });
+    }
+
+    const lowerMessage = message.toLowerCase();
+
+    const unrelatedWords = [
+      "weather",
+      "politics",
+      "game",
+      "movie",
+      "school",
+      "homework",
+      "crypto",
+      "stock",
+    ];
+
+    if (unrelatedWords.some((word) => lowerMessage.includes(word))) {
+      return res.json({
+        reply:
+          "I can only help with LoveShot Camera Rental questions such as bookings, prices, payments, availability, and rental rules.",
+      });
+    }
+
+    if (
+      lowerMessage === "hi" ||
+      lowerMessage === "hello" ||
+      lowerMessage === "hey" ||
+      lowerMessage === "good morning" ||
+      lowerMessage === "good afternoon" ||
+      lowerMessage === "good evening"
+    ) {
+      return res.json({
+        reply:
+          "Welcome to LoveShot Rental! I can help you with booking, prices, payment, availability, and rental rules.",
+      });
+    }
+
+    const faqAnswers = [
+      {
+        keywords: ["reservation", "fee", "downpayment"],
+        answer:
+          "The LoveShot reservation fee is ₱550. Your booking will stay pending until the admin confirms your payment.",
+      },
+      {
+        keywords: ["pay", "payment", "gcash"],
+        answer:
+          "Payment is done manually through GCash. After paying, please upload or send your proof of payment. Admin confirmation is required.",
+      },
+      {
+        keywords: ["available", "availability", "date", "schedule"],
+        answer:
+          "You can check the available dates on the booking form. The admin controls unavailable dates, so please wait for admin confirmation.",
+      },
+      {
+        keywords: ["camera", "a6400", "sony"],
+        answer:
+          "LoveShot Rental offers the Sony A6400 with kit lens. Please check the booking form for the current camera rental price.",
+      },
+      {
+        keywords: ["lens", "telephoto"],
+        answer:
+          "LoveShot Rental offers a telephoto lens option. You may also rent both the camera and lens as a package.",
+      },
+      {
+        keywords: ["package", "camera and lens", "both"],
+        answer:
+          "The camera + lens package is ₱1000 per day. For rentals of 7 days or more, the promo rate is ₱500 per day.",
+      },
+      {
+        keywords: ["7 days", "promo", "discount"],
+        answer:
+          "For rentals of 7 days or more, the daily promo rate is ₱500 per day. Admin confirmation is still required.",
+      },
+      {
+        keywords: ["late", "return", "delay"],
+        answer:
+          "The late return fee is ₱100 per hour after the agreed return time.",
+      },
+      {
+        keywords: ["after", "submit", "booking", "request"],
+        answer:
+          "After submitting your booking request, your reservation will be pending. Please complete the manual GCash payment and wait for admin confirmation.",
+      },
+      {
+        keywords: ["requirement", "requirements", "valid id", "id"],
+        answer:
+          "Please prepare your booking details and any requirements requested by the admin. Final approval depends on admin confirmation.",
+      },
+    ];
+
+    const matchedFaq = faqAnswers.find((faq) =>
+      faq.keywords.some((keyword) => lowerMessage.includes(keyword)),
+    );
+
+    if (matchedFaq) {
+      return res.json({ reply: matchedFaq.answer });
+    }
+
+    if (process.env.OPENAI_API_KEY) {
+      const OpenAI = require("openai");
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4.1-mini",
+        messages: [
+          {
+            role: "system",
+            content: `
+You are LoveShot AI Assistant.
+
+Only answer questions about LoveShot Camera Rental.
+
+FAQ knowledge:
+- Business name: LoveShot Rental
+- Rental items: Sony A6400 with kit lens, telephoto lens, camera + lens package
+- Reservation fee: ₱550
+- Camera rental: use existing website price
+- Camera + lens package: ₱1000 per day
+- Rentals 7 days or more: ₱500 per day promo rate
+- Payment method: Manual GCash payment
+- Customer must upload or send proof of payment
+- Booking is pending until admin confirms payment
+- Admin controls unavailable dates
+- Customers should check available dates before submitting reservation
+- Late return fee: ₱100 per hour
+- Rental period is based on selected rental dates
+- Never confirm bookings automatically
+- Never approve payments automatically
+- Always remind customer that admin confirmation is required
+
+If unrelated, reply:
+"I can only help with LoveShot Camera Rental questions such as bookings, prices, payments, availability, and rental rules."
+
+Keep answers short, clear, and friendly.
+            `,
+          },
+          {
+            role: "user",
+            content: message,
+          },
+        ],
+      });
+
+      return res.json({
+        reply: completion.choices[0].message.content,
+      });
+    }
+
+    return res.json({
+      reply:
+        "For more details, please contact LoveShot support through the Messages section. Admin confirmation is required for bookings and payments.",
+    });
+  } catch (error) {
+    console.error("AI chat error:", error);
+
+    res.status(500).json({
+      reply:
+        "Sorry, LoveShot AI is currently unavailable. Please contact the admin for confirmation.",
+    });
+  }
+});
+
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server running on http://localhost:${process.env.PORT || 3000}`);
 });
