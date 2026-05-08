@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Messages</title>
+    <link rel="stylesheet" href="message.css" />
+  </head>
+
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-header-top">
+          <a href="index.html" class="back-btn">← Back to LoveShot</a>
+          <h1>LoveShot Support</h1>
+        </div>
+      </div>
+
+      <div class="register-box" id="registerBox">
+        <h2>Start Chat</h2>
+        <p>Please enter your name before chatting.</p>
+
+        <input type="text" id="registerName" placeholder="Your name" />
+        <button id="startChatBtn">Start Chat</button>
+      </div>
+
+      <div class="chat-area hidden" id="chatArea">
+        <div class="chat-messages" id="chatMessages"></div>
+
+        <form class="chat-input-area" id="chatForm">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Type your message..."
+            required
+          />
+
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="message.js"></script>
+  </body>
+</html>

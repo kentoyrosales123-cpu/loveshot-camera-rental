@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+
+  <body>
+    <div class="admin-container">
+      <aside class="sidebar">
+        <h2>LoveShot Admin</h2>
+
+        <nav>
+          <a href="#">Dashboard</a>
+          <a href="#">Reservations</a>
+          <a href="#">Payments</a>
+          <a href="#">Analytics</a>
+          <a href="#messagesSection">Messages</a>
+          <button onclick="logoutAdmin()" class="logout-btn">Logout</button>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <div class="topbar">
+          <h1>Camera Rental Dashboard</h1>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <h3>Total Reservations</h3>
+            <p id="totalReservations">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Pending Payments</h3>
+            <p id="pendingPayments">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Approved Rentals</h3>
+            <p id="approvedRentals">0</p>
+          </div>
+
+          <div class="card">
+            <h3>Total Revenue</h3>
+            <p id="totalRevenue">₱0</p>
+          </div>
+        </div>
+
+        <div class="table-section">
+          <h2>Reservation Requests</h2>
+
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Camera</th>
+                <th>Days</th>
+                <th>Total</th>
+                <th>GCash Ref.</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="reservationTable"></tbody>
+          </table>
+        </div>
+
+        <div class="table-section" id="messagesSection">
+          <h2>Customer Messages</h2>
+
+          <div class="admin-chat-layout">
+            <div id="conversationList" class="conversation-list"></div>
+
+            <div class="admin-chat-panel">
+              <div id="adminMessages"></div>
+
+              <div class="admin-reply-box">
+                <input
+                  type="text"
+                  id="adminReplyInput"
+                  placeholder="Reply to selected customer..."
+                />
+
+                <button onclick="sendAdminReply()">Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

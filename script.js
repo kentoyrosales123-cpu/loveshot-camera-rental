@@ -32,10 +32,13 @@ function showPage(pageId) {
 
 navLinks.forEach((link) => {
   link.addEventListener("click", function (e) {
-    e.preventDefault();
-
     const targetPage = this.dataset.page;
 
+    if (!targetPage) {
+      return;
+    }
+
+    e.preventDefault();
     showPage(targetPage);
   });
 });
@@ -256,12 +259,76 @@ const paymentModal = document.getElementById("paymentModal");
 const closePaymentModal = document.getElementById("closePaymentModal");
 const donePaymentBtn = document.getElementById("donePaymentBtn");
 
+let pendingReservation = null;
+
 if (rentalForm && paymentModal) {
-  rentalForm.addEventListener("submit", (e) => {
+  rentalForm.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    pendingReservation = {
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      phone: document.getElementById("phone").value,
+      camera:
+        document.getElementById("cameraSelect").options[
+          document.getElementById("cameraSelect").selectedIndex
+        ].text,
+      lens: "Included / Selected Package",
+      days: Number(document.getElementById("rentalDays").value),
+      total: Number(
+        document
+          .getElementById("totalPrice")
+          .textContent.replace("₱", "")
+          .replace(",", ""),
+      ),
+      paymentStatus: "pending",
+      status: "pending",
+    };
 
     paymentModal.classList.add("active");
     document.body.style.overflow = "hidden";
+  });
+}
+
+if (donePaymentBtn) {
+  donePaymentBtn.addEventListener("click", async () => {
+    const referenceInput = document.getElementById("gcashReference");
+    const gcashReference = referenceInput.value.trim();
+
+    if (!gcashReference) {
+      alert("Please enter your GCash reference number.");
+      return;
+    }
+
+    pendingReservation.gcashReference = gcashReference;
+
+    try {
+      const response = await fetch("/api/reservations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(pendingReservation),
+      });
+
+      if (!response.ok) {
+        throw new Error("Reservation was not saved.");
+      }
+
+      alert("Reservation submitted successfully!");
+
+      paymentModal.classList.remove("active");
+      document.body.style.overflow = "auto";
+
+      rentalForm.reset();
+      referenceInput.value = "";
+      totalPrice.textContent = "₱0";
+      discountNote.textContent = "";
+      pendingReservation = null;
+    } catch (error) {
+      console.error(error);
+      alert("Failed to submit reservation. Please try again.");
+    }
   });
 }
 

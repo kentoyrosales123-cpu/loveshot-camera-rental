@@ -17,6 +17,7 @@
         <a href="#cameras" data-page="cameras">Cameras</a>
         <a href="#gallery" data-page="gallery">Gallery</a>
         <a href="#contact" data-page="contact">Contact</a>
+        <a href="/message.html">Messages</a>
       </nav>
     </header>
 
@@ -288,11 +289,15 @@
 
       <form class="contact-form" id="rentalForm">
         <div class="form-group">
-          <input type="text" placeholder="Your Name" required />
+          <input type="text" id="name" placeholder="Your Name" required />
         </div>
 
         <div class="form-group">
-          <input type="email" placeholder="Your Email" required />
+          <input type="email" id="email" placeholder="Your Email" required />
+        </div>
+
+        <div class="form-group">
+          <input type="tel" id="phone" placeholder="Phone Number" required />
         </div>
 
         <div class="form-group">
@@ -396,6 +401,15 @@
           After payment, please send your GCash receipt/screenshot to our
           Facebook page or contact number for confirmation.
         </p>
+
+        <div class="form-group">
+          <input
+            type="text"
+            id="gcashReference"
+            placeholder="Enter GCash Reference Number"
+            required
+          />
+        </div>
 
         <button class="agree-btn" id="donePaymentBtn">Done</button>
       </div>
