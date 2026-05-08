@@ -86,7 +86,7 @@ async function confirmPayment(id) {
     loadReservations();
   } catch (error) {
     console.error("Confirm payment error:", error);
-    alert("Confirm payment failed. Check console.");
+    alert("Confirm payment failed.");
   }
 }
 

@@ -96,13 +96,6 @@ app.get("/api/reservations", async (req, res) => {
 
 app.patch("/api/reservations/:id/payment", async (req, res) => {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        message: "Missing RESEND_API_KEY in .env file",
-      });
-    }
-
     const reservation = await Reservation.findById(req.params.id);
 
     if (!reservation) {
@@ -112,62 +105,56 @@ app.patch("/api/reservations/:id/payment", async (req, res) => {
       });
     }
 
-    if (!reservation.email) {
-      return res.status(400).json({
-        success: false,
-        message: "Reservation has no client email address.",
-      });
-    }
-
     reservation.paymentStatus = "confirmed";
     reservation.status = "approved";
-
     await reservation.save();
-
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: reservation.email,
-      subject: "LoveShot Booking Confirmation",
-      html: `
-    <div style="font-family: Arial; padding: 20px;">
-      <h2 style="color:#2563eb;">
-        Booking Confirmed 📸
-      </h2>
-
-      <p>Hello ${reservation.name},</p>
-
-      <p>
-        Your payment has been confirmed successfully.
-        Your booking with <strong>LoveShot Rental</strong>
-        is now officially reserved.
-      </p>
-
-      <div style="
-        background:#f1f5f9;
-        padding:20px;
-        border-radius:12px;
-        margin-top:20px;
-      ">
-        <h3>Booking Details</h3>
-
-        <p><strong>Camera:</strong> ${reservation.camera}</p>
-        <p><strong>Lens:</strong> ${reservation.lens || "N/A"}</p>
-        <p><strong>Rental Days:</strong> ${reservation.days}</p>
-        <p><strong>Total:</strong> ₱${reservation.total}</p>
-      </div>
-
-      <p style="margin-top:20px;">
-        Thank you for choosing LoveShot Rental.
-      </p>
-    </div>
-  `,
-    });
 
     res.json({
       success: true,
-      message: "Payment confirmed and email sent.",
+      message: "Payment confirmed. Email is being sent.",
       reservation,
     });
+
+    if (reservation.email) {
+      transporter
+        .sendMail({
+          from: process.env.GMAIL_USER,
+          to: reservation.email,
+          subject: "LoveShot Booking Confirmation",
+          html: `
+            <div style="font-family: Arial; padding: 20px;">
+              <h2 style="color:#2563eb;">Booking Confirmed 📸</h2>
+
+              <p>Hello ${reservation.name},</p>
+
+              <p>
+                Your payment has been confirmed successfully.
+                Your booking with <strong>LoveShot Rental</strong>
+                is now officially reserved.
+              </p>
+
+              <div style="background:#f1f5f9; padding:20px; border-radius:12px; margin-top:20px;">
+                <h3>Booking Details</h3>
+                <p><strong>Camera:</strong> ${reservation.camera || "N/A"}</p>
+                <p><strong>Lens:</strong> ${reservation.lens || "N/A"}</p>
+                <p><strong>Rental Days:</strong> ${reservation.days}</p>
+                <p><strong>Total:</strong> ₱${reservation.total}</p>
+                <p><strong>Status:</strong> Approved</p>
+              </div>
+
+              <p style="margin-top:20px;">
+                Thank you for choosing LoveShot Rental.
+              </p>
+            </div>
+          `,
+        })
+        .then(() => {
+          console.log("Confirmation email sent to:", reservation.email);
+        })
+        .catch((error) => {
+          console.error("Email failed:", error);
+        });
+    }
   } catch (error) {
     console.error("Payment confirmation error:", error);
 
@@ -183,7 +170,7 @@ app.patch("/api/reservations/:id/status", async (req, res) => {
     const reservation = await Reservation.findByIdAndUpdate(
       req.params.id,
       { status: req.body.status },
-      { new: true },
+      { returnDocument: "after" },
     );
 
     res.json(reservation);
