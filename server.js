@@ -137,9 +137,9 @@ app.patch("/api/reservations/:id/payment", async (req, res) => {
     });
 
     if (reservation.email) {
-      resend.emails
-        .send({
-          from: "LoveShot Rental <onboarding@resend.dev>",
+      transporter
+        .sendMail({
+          from: `"LoveShot Rental" <${process.env.GMAIL_USER}>`,
           to: reservation.email,
           subject: "LoveShot Booking Confirmation",
           html: `
