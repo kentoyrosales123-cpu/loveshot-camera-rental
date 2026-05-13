@@ -310,7 +310,7 @@ if (rentalForm && paymentModal) {
           .textContent.replace("₱", "")
           .replace(",", ""),
       ),
-      paymentStatus: "pending",
+      paymentStatus: "pending_verification",
       status: "pending",
     };
 
@@ -343,6 +343,8 @@ if (donePaymentBtn) {
       if (!response.ok) {
         throw new Error("Reservation was not saved.");
       }
+
+      localStorage.setItem("aiBookingCustomerName", pendingReservation.name);
 
       alert("Reservation submitted successfully!");
 
@@ -440,14 +442,260 @@ const aiChatMessages = document.getElementById("aiChatMessages");
 const aiChatForm = document.getElementById("aiChatForm");
 const aiChatInput = document.getElementById("aiChatInput");
 const quickQuestions = document.querySelectorAll(".ai-quick-questions button");
+const AI_CHAT_STORAGE_KEY = "loveshotAiChatHistory";
 
-function addAiMessage(message, sender = "bot") {
+/* AI BOOKING FLOW */
+
+let aiBookingData = {};
+let aiBookingStep = null;
+
+function startAiBooking() {
+  aiBookingData = {};
+  aiBookingStep = "name";
+
+  addAiMessage(
+    "Sure! I can help you book a rental.\n\nWhat is your full name?",
+  );
+}
+
+async function handleAiBooking(message) {
+  if (aiBookingStep === "name") {
+    aiBookingData.name = message;
+
+    aiBookingStep = "email";
+
+    addAiMessage("Please enter your email address.");
+
+    return true;
+  }
+
+  if (aiBookingStep === "email") {
+    aiBookingData.email = message;
+
+    aiBookingStep = "phone";
+
+    addAiMessage("Please enter your phone number.");
+
+    return true;
+  }
+
+  if (aiBookingStep === "phone") {
+    aiBookingData.phone = message;
+
+    aiBookingStep = "item";
+
+    addAiMessage(
+      `What would you like to rent?
+
+1. Sony A6400 Kit Lens
+2. Telephoto Lens
+3. Camera + Lens`,
+    );
+
+    return true;
+  }
+
+  if (aiBookingStep === "item") {
+    const lower = message.toLowerCase();
+
+    if (lower.includes("1") || lower.includes("a6400")) {
+      aiBookingData.item = "Sony A6400 Kit Lens";
+    } else if (lower.includes("2") || lower.includes("telephoto")) {
+      aiBookingData.item = "Telephoto Lens";
+    } else {
+      aiBookingData.item = "Camera + Lens";
+    }
+
+    aiBookingStep = "startDate";
+
+    addAiMessage("Enter rental start date.\n\nExample: 2026-05-12");
+
+    return true;
+  }
+
+  if (aiBookingStep === "startDate") {
+    aiBookingData.startDate = message;
+
+    aiBookingStep = "endDate";
+
+    addAiMessage("Enter rental end date.\n\nExample: 2026-05-15");
+
+    return true;
+  }
+
+  if (aiBookingStep === "endDate") {
+    aiBookingData.endDate = message;
+
+    aiBookingStep = "gcashReference";
+
+    addAiMessage(
+      `Please send the ₱550 reservation fee through GCash.
+
+GCash Number:
+0938 553 4711
+
+Account Name:
+E** J** FR*N M.
+
+After payment, enter your GCash reference number here.`,
+    );
+
+    return true;
+  }
+  if (aiBookingStep === "gcashReference") {
+    aiBookingData.gcashReference = message;
+
+    addAiMessage("Creating your booking request...");
+
+    try {
+      const res = await fetch("/api/ai-booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(aiBookingData),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.setItem("aiBookingCustomerName", aiBookingData.name);
+
+        addAiMessage(
+          `Booking request submitted successfully!
+
+Item: ${data.booking.item}
+Days: ${data.booking.days}
+Total: ₱${data.booking.totalPrice}
+GCash Reference: ${aiBookingData.gcashReference}
+Status: Pending Payment Confirmation
+
+Please wait for admin confirmation.`,
+        );
+      } else {
+        addAiMessage(data.message || "Booking failed. Please try again later.");
+      }
+    } catch (error) {
+      console.error(error);
+      addAiMessage("Server error while creating booking.");
+    }
+
+    aiBookingStep = null;
+    aiBookingData = {};
+
+    return true;
+  }
+  return false;
+}
+
+function addAiMessage(message, sender = "bot", save = true) {
   const div = document.createElement("div");
   div.className = `ai-message ${sender}`;
   div.textContent = message;
   aiChatMessages.appendChild(div);
   aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
+
+  if (save) {
+    const history = JSON.parse(
+      localStorage.getItem(AI_CHAT_STORAGE_KEY) || "[]",
+    );
+
+    history.push({ message, sender, time: new Date().toISOString() });
+
+    localStorage.setItem(AI_CHAT_STORAGE_KEY, JSON.stringify(history));
+  }
 }
+
+function saveAiMessage(message, sender = "bot") {
+  if (message === "Typing...") return;
+
+  const history = JSON.parse(localStorage.getItem(AI_CHAT_STORAGE_KEY) || "[]");
+
+  history.push({
+    message,
+    sender,
+    time: new Date().toISOString(),
+  });
+
+  localStorage.setItem(AI_CHAT_STORAGE_KEY, JSON.stringify(history));
+}
+
+document.getElementById("clearAiChat")?.addEventListener("click", () => {
+  localStorage.removeItem(AI_CHAT_STORAGE_KEY);
+
+  aiChatMessages.innerHTML = "";
+
+  addAiMessage(
+    "Hi! I’m LoveShot AI Assistant. Ask me about rental prices, payment, availability, or booking rules.",
+    "bot",
+  );
+});
+
+let lastConfirmedReservationId =
+  localStorage.getItem("lastConfirmedReservationId") || "";
+
+async function checkConfirmedPaymentForAi() {
+  try {
+    const customerName =
+      localStorage.getItem("aiBookingCustomerName") ||
+      localStorage.getItem("chatUserName");
+
+    if (!customerName) return;
+
+    const res = await fetch("/api/reservations");
+    const reservations = await res.json();
+
+    const confirmed = reservations.find((item) => {
+      const sameCustomer =
+        item.name &&
+        item.name.trim().toLowerCase() === customerName.trim().toLowerCase();
+
+      return (
+        sameCustomer &&
+        item.paymentStatus === "confirmed" &&
+        item.status === "approved" &&
+        item._id !== lastConfirmedReservationId
+      );
+    });
+
+    if (!confirmed) return;
+
+    lastConfirmedReservationId = confirmed._id;
+
+    localStorage.setItem("lastConfirmedReservationId", confirmed._id);
+
+    addAiMessage(
+      `Payment confirmed!
+
+Hi ${confirmed.name}, your LoveShot booking has been approved.
+
+Camera: ${confirmed.camera}
+Rental Days: ${confirmed.days}
+Total: ₱${confirmed.total}
+
+Thank you for choosing LoveShot Rental!`,
+      "bot",
+    );
+  } catch (error) {
+    console.error("AI payment confirmation check failed:", error);
+  }
+}
+
+setInterval(checkConfirmedPaymentForAi, 5000);
+
+function loadAiChatHistory() {
+  const history = JSON.parse(localStorage.getItem(AI_CHAT_STORAGE_KEY) || "[]");
+
+  if (!history.length) return;
+
+  aiChatMessages.innerHTML = "";
+
+  history.forEach((item) => {
+    addAiMessage(item.message, item.sender, false);
+  });
+}
+
+loadAiChatHistory();
 
 aiChatToggle?.addEventListener("click", () => {
   aiChatBox.classList.toggle("active");
@@ -473,7 +721,27 @@ aiChatForm?.addEventListener("submit", async (e) => {
   addAiMessage(message, "user");
   aiChatInput.value = "";
 
-  addAiMessage("Typing...", "bot");
+  /* HANDLE BOOKING FLOW */
+
+  if (aiBookingStep) {
+    await handleAiBooking(message);
+    return;
+  }
+
+  /* START BOOKING */
+
+  const lowerMessage = message.toLowerCase();
+
+  if (
+    lowerMessage.includes("book") ||
+    lowerMessage.includes("reserve") ||
+    lowerMessage.includes("rent now")
+  ) {
+    startAiBooking();
+    return;
+  }
+
+  addAiMessage("Typing...", "bot", false);
   const typingMessage = aiChatMessages.lastChild;
 
   try {
@@ -487,8 +755,11 @@ aiChatForm?.addEventListener("submit", async (e) => {
 
     const data = await res.json();
     typingMessage.textContent = data.reply;
+    saveAiMessage(data.reply, "bot");
   } catch (error) {
     typingMessage.textContent =
       "Sorry, I cannot answer right now. Please contact the LoveShot admin for confirmation.";
   }
 });
+
+checkConfirmedPaymentForAi();

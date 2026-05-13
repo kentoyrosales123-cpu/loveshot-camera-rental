@@ -99,10 +99,32 @@ const Message = mongoose.model("Message", messageSchema);
 
 app.post("/api/reservations", async (req, res) => {
   try {
+    if (req.body.gcashReference) {
+      const existingReference = await Reservation.findOne({
+        gcashReference: req.body.gcashReference,
+      });
+
+      if (existingReference) {
+        return res.status(400).json({
+          success: false,
+          message: "This GCash reference number already exists.",
+        });
+      }
+    }
+
     const reservation = await Reservation.create(req.body);
-    res.json(reservation);
+
+    res.json({
+      success: true,
+      reservation,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to create reservation" });
+    console.error("Create reservation error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to create reservation",
+    });
   }
 });
 
@@ -130,6 +152,26 @@ app.patch("/api/reservations/:id/payment", async (req, res) => {
     reservation.status = "approved";
     await reservation.save();
 
+    let conversation = await Conversation.findOne({ name: reservation.name });
+
+    if (!conversation) {
+      conversation = await Conversation.create({ name: reservation.name });
+    }
+
+    await Message.create({
+      conversationId: conversation._id.toString(),
+      name: reservation.name,
+      sender: "admin",
+      message: `Hi ${reservation.name}! Your LoveShot booking has been approved. Your payment has been confirmed.
+
+Booking Details:
+Camera: ${reservation.camera || "N/A"}
+Lens: ${reservation.lens || "N/A"}
+Rental Days: ${reservation.days}
+Total: ₱${reservation.total}
+
+Thank you for choosing LoveShot Rental!`,
+    });
     res.json({
       success: true,
       message: "Payment confirmed. Email is being sent.",
@@ -507,6 +549,88 @@ Keep answers short, clear, and friendly.
     res.status(500).json({
       reply:
         "Sorry, LoveShot AI is currently unavailable. Please contact the admin for confirmation.",
+    });
+  }
+});
+
+app.post("/api/ai-booking", async (req, res) => {
+  try {
+    const { name, email, phone, item, startDate, endDate, gcashReference } =
+      req.body;
+
+    if (!name || !email || !phone || !item || !startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing booking details",
+      });
+    }
+
+    if (new Date(endDate) < new Date(startDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "End date cannot be earlier than start date.",
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+
+    let pricePerDay = 550;
+
+    if (item === "Camera + Lens") {
+      pricePerDay = days >= 7 ? 900 : 1000;
+    } else if (days >= 7) {
+      pricePerDay = 500;
+    }
+
+    const total = days * pricePerDay;
+
+    if (gcashReference) {
+      const existingReference = await Reservation.findOne({
+        gcashReference,
+      });
+
+      if (existingReference) {
+        return res.status(400).json({
+          success: false,
+          message: "This GCash reference number was already submitted.",
+        });
+      }
+    }
+
+    const reservation = await Reservation.create({
+      name,
+      email,
+      phone,
+      rentalDate: startDate,
+      camera: item,
+      lens: item.includes("Lens") ? "Included / Selected Package" : "N/A",
+      days,
+      total,
+      gcashReference: gcashReference || "AI Booking - Pending Payment",
+      paymentStatus: "pending_verification",
+      status: "pending",
+    });
+
+    res.json({
+      success: true,
+      message: "AI booking saved to reservations.",
+      booking: {
+        item: reservation.camera,
+        days: reservation.days,
+        totalPrice: reservation.total,
+        status: reservation.status,
+      },
+      reservation,
+    });
+  } catch (error) {
+    console.error("AI booking error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while creating booking",
     });
   }
 });
